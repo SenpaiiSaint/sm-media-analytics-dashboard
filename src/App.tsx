@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import { fetchSocialData, SocialData } from "./services/socialServices";
+import SocialMetricCard from "./components/SocialMetricCard";
+import AnalyticsChart from "./components/AnalyticsChart";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [metrics, setMetrics] = useState<SocialData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const loadMetrics = async () => {
+      try {
+        const data = await fetchSocialData();
+        setMetrics(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadMetrics();
+  }, []);
+
+  if (loading) return <p>Loading...</p>
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div>
+      <h1>Social Media Analytics Dashboard</h1> 
+      <div className="cards-container">
+        {metrics.map((metric) => (
+          <SocialMetricCard key={metric.platform} data={metric} />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <AnalyticsChart />
+    </div>
+  );
+};
 
-export default App
+export default App;
